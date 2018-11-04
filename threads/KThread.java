@@ -273,11 +273,24 @@ public class KThread {
      * thread.
      */
     public void join() {
-	Lib.debug(dbgThread, "Joining to thread: " + toString());
+    	Lib.debug(dbgThread, "Joining to thread: " + toString());
 
-	Lib.assertTrue(this != currentThread);
+    	Lib.assertTrue(this != currentThread); /*WE ARE MAKING SURE THAT THIS THREAD IS NOT CURRENT THREAD*/
+    	if(this.status != statusFinished){ /*WE ARE MAKING SURE THAT THIS THREAD IS NOT FINISHED*/
+    		if(numberof == 0){ /*THIS VARIABLE MUST BE EQUAL TO ZERO FOR IT TO WORK*/
+    			numberof++;
+    			waitingQueue.waitForAccess(currentThread); 
+    			currentThread.sleep();
+    			this.run();
+    			waitingQueue.acquire(currentThread); /*WE ARE STORING THE PREVIOUSLY STORE CURRENTTHREAD INSIDE OF THE READYQUEUE*/
+    			currentThread.ready();
+    			numberof--;
+    		}
+    		
+    	}
+    			
 
-    }
+    	}
 
     /**
      * Create the idle thread. Whenever there are no threads ready to be run,
@@ -440,8 +453,10 @@ public class KThread {
     /** Number of times the KThread constructor was called. */
     private static int numCreated = 0;
 
+    private static ThreadQueue waitingQueue = null; /*CREATING A WAITINGQUEUE THREAD*/
     private static ThreadQueue readyQueue = null;
     private static KThread currentThread = null;
     private static KThread toBeDestroyed = null;
     private static KThread idleThread = null;
+    private int numberof = 0; /*INITIALIZING THE INTEGER NUMBEROF*/
 }

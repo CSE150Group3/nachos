@@ -4,42 +4,92 @@ import nachos.ag.BoatGrader;
 public class Boat
 {
     static BoatGrader bg;
+
+	static Lock boatLock;
+	static Condition waitingForBoat;
+	static Communicator kimmunicator;
+	static int boatLocation; // 0 for Oahu, 1 for Molokai
+	static int adultsAtOahu;
+	static int adultsAtMolokai;
+	static int childrenAtOahu;
+	static int childrenAtMolokai;
+	static int totalAdults;
+	static int totalChildren;
     
     public static void selfTest()
     {
-	BoatGrader b = new BoatGrader();
-	
-	System.out.println("\n ***Testing Boats with only 2 children***");
-	begin(0, 2, b);
+		BoatGrader b = new BoatGrader();
+		
+		System.out.println("\n ***Testing Boats with only 2 children***");
+		begin(0, 2, b);
 
-//	System.out.println("\n ***Testing Boats with 2 children, 1 adult***");
-//  	begin(1, 2, b);
+	//	System.out.println("\n ***Testing Boats with 2 children, 1 adult***");
+	//  	begin(1, 2, b);
 
-//  	System.out.println("\n ***Testing Boats with 3 children, 3 adults***");
-//  	begin(3, 3, b);
+	//  	System.out.println("\n ***Testing Boats with 3 children, 3 adults***");
+	//  	begin(3, 3, b);
     }
 
     public static void begin( int adults, int children, BoatGrader b )
     {
-	// Store the externally generated autograder in a class
-	// variable to be accessible by children.
-	bg = b;
+		// Store the externally generated autograder in a class
+		// variable to be accessible by children.
+		bg = b;
 
-	// Instantiate global variables here
-	
-	// Create threads here. See section 3.4 of the Nachos for Java
-	// Walkthrough linked from the projects page.
+		// Instantiate global variables here
+		boatLock = new Lock();
+		waitingForBoat = new Condition(boatLock);
+		kimmunicator = new Communicator();
 
-	Runnable r = new Runnable() {
-	    public void run() {
-                SampleItinerary();
-            }
-        };
-        KThread t = new KThread(r);
-        t.setName("Sample Boat Thread");
-        t.fork();
+		boatLocation = 0;
+		adultsAtOahu = adults;
+		adultsAtMolokai = 0;
+		childrenAtOahu = children;
+		childrenAtMolokai = 0;
+		totalAdults = adults;
+		totalChildren = children;
 
+
+		
+		// Create threads here. See section 3.4 of the Nachos for Java
+		// Walkthrough linked from the projects page.
+		/*
+		Runnable r = new Runnable() {
+			public void run() {
+					SampleItinerary();
+				}
+		};
+			KThread t = new KThread(r);
+			t.setName("Sample Boat Thread");
+			t.fork();
+		*/
+
+		Runnable runAdult = new Runnable() {
+			public void run() {
+					AdultItinerary();
+				}
+		};
+
+		Runnable runChild = new Runnable() {
+			public void run() {
+					ChildItinerary();
+				}
+		};
+
+		for(int i = 0; i < totalAdults; i++) {
+			KThread t = new KThread(runAdult);
+			t.setName("Adult " + i);
+			t.fork();
+		}
+
+		for(int i = 0; i < totalChildren; i++) {
+			KThread t = new KThread(runChild);
+			t.setName("Child " + i);
+			t.fork();	
+		}
     }
+
+
 
     static void AdultItinerary()
     {

@@ -60,9 +60,9 @@ public abstract class Scheduler {
      * @return	the thread's priority.
      */
     public int getPriority(KThread thread) {
-	Lib.assertTrue(Machine.interrupt().disabled());
-	return 0;
-    }
+       Lib.assertTrue(Machine.interrupt().disabled());
+       return 0;
+   }
 
     /**
      * Get the priority of the current thread. Equivalent to
@@ -71,8 +71,8 @@ public abstract class Scheduler {
      * @return	the current thread's priority.
      */
     public int getPriority() {
-	return getPriority(KThread.currentThread());
-    }
+       return getPriority(KThread.currentThread());
+   }
 
     /**
      * Get the effective priority of the specified thread. Must be called with
@@ -96,9 +96,9 @@ public abstract class Scheduler {
      * @return	the thread's effective priority.
      */
     public int getEffectivePriority(KThread thread) {
-	Lib.assertTrue(Machine.interrupt().disabled());
-	return 0;
-    }
+       Lib.assertTrue(Machine.interrupt().disabled());
+       return 0;
+   }
 
     /**
      * Get the effective priority of the current thread. Equivalent to
@@ -107,8 +107,8 @@ public abstract class Scheduler {
      * @return	the current thread's priority.
      */
     public int getEffectivePriority() {
-	return getEffectivePriority(KThread.currentThread());
-    }
+       return getEffectivePriority(KThread.currentThread());
+   }
 
     /**
      * Set the priority of the specified thread. Must be called with interrupts
@@ -118,8 +118,8 @@ public abstract class Scheduler {
      * @param	priority	the new priority.
      */
     public void setPriority(KThread thread, int priority) {
-	Lib.assertTrue(Machine.interrupt().disabled());
-    }
+       Lib.assertTrue(Machine.interrupt().disabled());
+   }
 
     /**
      * Set the priority of the current thread. Equivalent to
@@ -128,8 +128,8 @@ public abstract class Scheduler {
      * @param	priority	the new priority.
      */
     public void setPriority(int priority) {
-	setPriority(KThread.currentThread(), priority);
-    }
+       setPriority(KThread.currentThread(), priority);
+   }
 
     /**
      * If possible, raise the priority of the current thread in some
@@ -140,8 +140,8 @@ public abstract class Scheduler {
      *		priority.
      */
     public boolean increasePriority() {
-	return false;
-    }
+       return false;
+   }
 
     /**
      * If possible, lower the priority of the current thread user in some
@@ -152,6 +152,6 @@ public abstract class Scheduler {
      *		thread's priority.
      */
     public boolean decreasePriority() {
-	return false;
-    }
+       return false;
+   }
 }

@@ -10,7 +10,7 @@ public class ThreadedKernel extends Kernel {
      * Allocate a new multi-threaded kernel.
      */
     public ThreadedKernel() {
-	super();
+    	super();
     }
 
     /**
@@ -19,24 +19,24 @@ public class ThreadedKernel extends Kernel {
      */
     public void initialize(String[] args) {
 	// set scheduler
-	String schedulerName = Config.getString("ThreadedKernel.scheduler");
-	scheduler = (Scheduler) Lib.constructObject(schedulerName);
+    	String schedulerName = Config.getString("ThreadedKernel.scheduler");
+    	scheduler = (Scheduler) Lib.constructObject(schedulerName);
 
 	// set fileSystem
-	String fileSystemName = Config.getString("ThreadedKernel.fileSystem");
-	if (fileSystemName != null)
-	    fileSystem = (FileSystem) Lib.constructObject(fileSystemName);
-	else if (Machine.stubFileSystem() != null)
-	    fileSystem = Machine.stubFileSystem();
-	else
-	    fileSystem = null;
+    	String fileSystemName = Config.getString("ThreadedKernel.fileSystem");
+    	if (fileSystemName != null)
+    		fileSystem = (FileSystem) Lib.constructObject(fileSystemName);
+    	else if (Machine.stubFileSystem() != null)
+    		fileSystem = Machine.stubFileSystem();
+    	else
+    		fileSystem = null;
 
 	// start threading
-	new KThread(null);
+    	new KThread(null);
 
-	alarm  = new Alarm();
+    	alarm  = new Alarm();
 
-	Machine.interrupt().enable();
+    	Machine.interrupt().enable();
     }
 
     /**
@@ -46,12 +46,12 @@ public class ThreadedKernel extends Kernel {
      * tests here.
      */	
     public void selfTest() {
-	KThread.selfTest();
-	Semaphore.selfTest();
-	SynchList.selfTest();
-	if (Machine.bank() != null) {
-	    ElevatorBank.selfTest();
-	}
+    	KThread.selfTest();
+    	Semaphore.selfTest();
+    	SynchList.selfTest();
+    	if (Machine.bank() != null) {
+    		ElevatorBank.selfTest();
+    	}
     }
     
     /**
@@ -65,7 +65,7 @@ public class ThreadedKernel extends Kernel {
      * Terminate this kernel. Never returns.
      */
     public void terminate() {
-	Machine.halt();
+    	Machine.halt();
     }
 
     /** Globally accessible reference to the scheduler. */
