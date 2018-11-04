@@ -35,6 +35,7 @@ public class Alarm {
     	//Disable interrupts everywhere?
     	//check if it's time for next in queue to wake up 
     	Machine.interrupt().disable();
+        //Check if queue is empty and if it is time for next in queue to wake
     	while(!waitQueue.isEmpty() && waitQueue.peek().time <= Machine.timer().getTime()) {
     		//Remove thread from queue and ready it
     		WaitThread wThread = waitQueue.remove();
@@ -63,6 +64,7 @@ public class Alarm {
     	
     	Machine.interrupt().disable();
 
+        //Get time to wakeup, create WaitThread which links thread with a time, add to the waitQueue
         long wakeTime = Machine.timer().getTime() + x;
     	WaitThread currentWaitThread = new WaitThread(KThread.currentThread(), wakeTime);
     	waitQueue.add(currentWaitThread);
@@ -71,7 +73,7 @@ public class Alarm {
         Machine.interrupt().enable();
     }
 
-       class WaitThread implements Comparable<WaitThread>{
+    class WaitThread implements Comparable<WaitThread>{
     	private KThread thread;
     	private long time;
 
@@ -80,6 +82,7 @@ public class Alarm {
 			this.time = t;
 		}
 
+        //Compare for priority Queue
         @Override
 		public int compareTo(WaitThread wthread) {
 
