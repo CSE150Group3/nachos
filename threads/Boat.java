@@ -149,7 +149,7 @@ public class Boat
 				if(childrenAtOahu == totalChildren) { //If it's first time
 					//Send 2 children
 					bg.ChildRowToMolokai();
-					bg.ChildRowToMolokai();
+					bg.ChildRideToMolokai();
 					childrenAtMolokai += 2;
 					childrenAtOahu -= 2;
 					boatLocation = 1;
@@ -172,7 +172,7 @@ public class Boat
 				else {
 					while(childrenAtOahu > 1) {
 						bg.ChildRowToMolokai();
-						bg.ChildRowToMolokai();
+						bg.ChildRideToMolokai();
 						childrenAtMolokai += 2;
 						childrenAtOahu -= 2;
 						boatLocation = 1;
