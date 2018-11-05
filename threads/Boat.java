@@ -15,6 +15,10 @@ public class Boat
 	static int childrenAtMolokai;
 	static int totalAdults;
 	static int totalChildren;
+	static Condition adultWaitingOahu;
+	static Condition adultWaitingMolokai;
+	static Condition childrenWaitingOahu;
+	static Condition childrenWaitingMolokai;
     
     public static void selfTest()
     {
@@ -49,6 +53,12 @@ public class Boat
 		totalAdults = adults;
 		totalChildren = children;
 
+		adultWaitingOahu = new Condition(boatLock);
+		adultWaitingMolokai = new Condition(boatLock);
+		childrenWaitingOahu = new Condition(boatLock);
+		childrenWaitingMolokai = new Condition(boatLock);
+		
+
 
 		
 		// Create threads here. See section 3.4 of the Nachos for Java
@@ -63,25 +73,25 @@ public class Boat
 			t.setName("Sample Boat Thread");
 			t.fork();
 		*/
-
 		Runnable runAdult = new Runnable() {
 			public void run() {
 					AdultItinerary();
 				}
 		};
-
+		
 		Runnable runChild = new Runnable() {
 			public void run() {
 					ChildItinerary();
 				}
 		};
 
+		//Fork off a thread for each adult
 		for(int i = 0; i < totalAdults; i++) {
 			KThread t = new KThread(runAdult);
 			t.setName("Adult " + i);
 			t.fork();
 		}
-
+		//Fork off a thread for each child
 		for(int i = 0; i < totalChildren; i++) {
 			KThread t = new KThread(runChild);
 			t.setName("Child " + i);
@@ -99,10 +109,50 @@ public class Boat
 	       bg.AdultRowToMolokai();
 	   indicates that an adult has rowed the boat across to Molokai
 	*/
+		while(adultsAtOahu + childrenAtOahu > 0) {
+			if(boatLocation == 0) { //Oahu
+				//send 2 children. Don't send any adults.
+				if(childrenAtOahu == totalChildren || childrenAtMolokai <= 0) {// If it's the first time or there are no children at Molokai to bring boat back
+					childrenWaitingOahu.wakeAll();
+
+				}
+				// We can send adult as long as there is a child at molokai
+				else { // if(childrenAtMolokai > 0) { // Is there any other check that needs to be done?
+					boatLock.acquire();
+					bg.AdultRowToMolokai;
+					boatLock.release();
+				}
+			}
+			else { // Molokai
+				if(childrenAtMolokai > 0) { //If there is a child have a child row back
+					childrenWaitingMolokai.wake();
+				}
+				else {
+
+				}
+				adultWaitingMolokai.sleep();
+			}
+		}
+
     }
 
     static void ChildItinerary()
     {
+		while(adultsAtOahu + childrenAtOahu > 0) {
+			if(boatLocation == 0) { //Oahu
+				if(childrenAtOahu == totalChildren) { //If it's first time
+					bg.ChildRowToMolokai();
+					bg.ChildRowToMolokai();
+					childrenAtMolokai += 2;
+					childrenAtOahu -= 2;
+					boatLocation = 1;
+				}
+			}
+			else { // Molokai
+				if(childrenAt)
+
+			}
+		}
     }
 
     static void SampleItinerary()
