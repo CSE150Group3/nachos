@@ -117,6 +117,7 @@ public class Boat
 			adultsWaitingMolokai.sleep();
 			adultsWaitingOahu.sleep();
 		}
+		//While there are still people on Oahu
 		while(adultsAtOahu + childrenAtOahu > 0) {
 			if(boatLocation == 0) { //Oahu
 				//send 2 children. Don't send any adults.
@@ -129,11 +130,11 @@ public class Boat
 				boatLock.acquire();
 				boatRiders +=2;
 				--adultsAtOahu;
-				bg.AdultRowToMolokai;
+				bg.AdultRowToMolokai();
 				boatRiders -= 2;
 				++adultsAtMolokai;
 				boatLocation = 1;
-				adultsAtMolokai.sleep();
+				adultsWaitingMolokai.sleep();
 
 				//Edit: Not sure if needed or covered in Child() already
 				//Wake up single child at Molokai so we can send the boat back
@@ -151,14 +152,19 @@ public class Boat
 
     static void ChildItinerary()
     {
+		//While people still at Oahu
 		while(adultsAtOahu + childrenAtOahu > 0) {
 			if(boatLocation == 0) { //Oahu
 
+				//Sleep children on other island
+				childrenWaitingMolokai.sleep();
+
 				//Sleep if there is only one child or if boat is full
 				while((childrenAtOahu == 1 && adultsAtOahu > 0) || boatRiders >= 2) {
-					childrenAtOahu.sleep();
+					childrenWaitingOahu.sleep();
 				}
-				childrenAtOahu.wakeAll();
+
+				childrenWaitingOahu.wakeAll();
 
 				boatLock.acquire(); // Acquire lock at start
 
@@ -172,8 +178,8 @@ public class Boat
 					childrenAtOahu -= 2;
 					boatLocation = 1;
 					boatRiders -= 2;
-					childrenAtMolokai.sleep();
-					adultsAtMolokai.sleep(); //Not sure if this one is needed
+					childrenWaitingMolokai.sleep();
+					adultsWaitingMolokai.sleep(); //Not sure if this one is needed
 
 					//Send one back
 					boatRiders = 1;
@@ -214,13 +220,24 @@ public class Boat
 
 			}
 			else { // Molokai
-				//If boat is at Oahu, sleep all at Molokai
-				while(boatLocation == 0) {
-					childrenWaitingMolokai.sleep();
-					adultsWaitingMolokai.sleep();
-				}
-				//Otherwise we send a child back to Molokai
-				if()
+			
+				//Sleep children on other island
+				childrenWaitingOahu.sleep();
+
+				//Wake a child for boat
+				childrenWaitingMolokai.wake();
+			//Otherwise we send a child back to Molokai
+				boatLock.acquire();
+				boatRiders = 1;
+				--childrenAtMolokai;
+				bg.ChildRowToOahu();
+				++childrenAtOahu;
+				boatLocation = 0;
+				boatLock.release();
+
+
+//				childrenWaitingOahu.wakeAll();
+//				childrenWaitingOahu.sleep();
 
 			}
 		}
