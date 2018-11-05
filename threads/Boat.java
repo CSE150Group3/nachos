@@ -6,7 +6,6 @@ public class Boat
     static BoatGrader bg;
 
 	static Lock boatLock;
-	static Condition waitingForBoat;
 	static Communicator kimmunicator;
 	static int boatLocation; // 0 for Oahu, 1 for Molokai
 	static int adultsAtOahu;
@@ -43,7 +42,6 @@ public class Boat
 
 		// Instantiate global variables here
 		boatLock = new Lock();
-		waitingForBoat = new Condition(boatLock);
 		kimmunicator = new Communicator();
 
 		boatLocation = 0;
@@ -126,21 +124,23 @@ public class Boat
 					//childrenWaitingOahu.wakeAll();
 					adultsWaitingOahu.sleep();
 				}
-				// We can send adult as long as there is a child at molokai
-				boatLock.acquire();
-				boatRiders +=2;
-				--adultsAtOahu;
-				bg.AdultRowToMolokai();
-				boatRiders -= 2;
-				++adultsAtMolokai;
-				boatLocation = 1;
-				adultsWaitingMolokai.sleep();
+				else {
+					// We can send adult as long as there is a child at molokai
+					boatLock.acquire();
+					boatRiders +=2;
+					--adultsAtOahu;
+					bg.AdultRowToMolokai();
+					boatRiders -= 2;
+					++adultsAtMolokai;
+					boatLocation = 1;
+					adultsWaitingMolokai.sleep();
 
-				//Edit: Not sure if needed or covered in Child() already
-				//Wake up single child at Molokai so we can send the boat back
-				childrenWaitingMolokai.wake();
-				
-				boatLock.release();
+					//Edit: Not sure if needed or covered in Child() already
+					//Wake up single child at Molokai so we can send the boat back
+					childrenWaitingMolokai.wake();
+					
+					boatLock.release();
+				}
 			}
 			else {	// Molokai
 				//Adults should never leave Molokai so nothing happens here.
