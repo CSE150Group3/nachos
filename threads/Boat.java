@@ -15,8 +15,8 @@ public class Boat
 	static int childrenAtMolokai;
 	static int totalAdults;
 	static int totalChildren;
-	static Condition adultWaitingOahu;
-	static Condition adultWaitingMolokai;
+	static Condition adultsWaitingOahu;
+	static Condition adultsWaitingMolokai;
 	static Condition childrenWaitingOahu;
 	static Condition childrenWaitingMolokai;
     
@@ -53,8 +53,8 @@ public class Boat
 		totalAdults = adults;
 		totalChildren = children;
 
-		adultWaitingOahu = new Condition(boatLock);
-		adultWaitingMolokai = new Condition(boatLock);
+		adultsWaitingOahu = new Condition(boatLock);
+		adultsWaitingMolokai = new Condition(boatLock);
 		childrenWaitingOahu = new Condition(boatLock);
 		childrenWaitingMolokai = new Condition(boatLock);
 		
@@ -109,6 +109,11 @@ public class Boat
 	       bg.AdultRowToMolokai();
 	   indicates that an adult has rowed the boat across to Molokai
 	*/
+
+		//While no children have been sent adults wait
+		while(childrenAtOahu == totalChildren) {
+			KThread.yield();
+		}
 		while(adultsAtOahu + childrenAtOahu > 0) {
 			if(boatLocation == 0) { //Oahu
 				//send 2 children. Don't send any adults.
@@ -130,7 +135,7 @@ public class Boat
 				else {
 
 				}
-				adultWaitingMolokai.sleep();
+				adultsWaitingMolokai.sleep();
 			}
 		}
 
@@ -140,16 +145,56 @@ public class Boat
     {
 		while(adultsAtOahu + childrenAtOahu > 0) {
 			if(boatLocation == 0) { //Oahu
+				boatLock.acquire(); // Acquire lock at start
 				if(childrenAtOahu == totalChildren) { //If it's first time
+					//Send 2 children
 					bg.ChildRowToMolokai();
 					bg.ChildRowToMolokai();
 					childrenAtMolokai += 2;
 					childrenAtOahu -= 2;
 					boatLocation = 1;
+					//Send one back
+					bg.ChildRowToOahu();
+					++childrenAtOahu;
+					--childrenAtMolokai;
+					boatLocation = 0;
+
 				}
+				//If there is only one more child on Oahu we send and are finished
+				else if(childrenAtOahu == 1 && adultsAtOahu == 0) {
+					bg.ChildRowToMolokai();
+					++childrenAtMolokai;
+					--childrenAtOahu;
+					boatLocation = 1;
+					//What do we do if finished? Use speaker/speak right? Check PDF
+				}
+				//Otherwise loop through and send all children to molokai
+				else {
+					while(childrenAtOahu > 1) {
+						bg.ChildRowToMolokai();
+						bg.ChildRowToMolokai();
+						childrenAtMolokai += 2;
+						childrenAtOahu -= 2;
+						boatLocation = 1;
+						//Send a kid back and repeat
+						bg.ChildRowToOahu();
+						--childrenAtMolokai;
+						++childrenAtOahu;
+						boatLocation = 0;
+					}
+				}
+				//Release lock when done with Oahu Block
+				boatLock.release();
+
 			}
 			else { // Molokai
-				if(childrenAt)
+				//If boat is at Oahu, sleep all at Molokai
+				while(boatLocation == 0) {
+					childrenWaitingMolokai.sleep();
+					adultsWaitingMolokai.sleep();
+				}
+				//Otherwise we send a child back to Molokai
+				if()
 
 			}
 		}
