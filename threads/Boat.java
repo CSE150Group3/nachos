@@ -15,6 +15,7 @@ public class Boat
 	static int childrenAtMolokai;
 	static int totalAdults;
 	static int totalChildren;
+	static int boatRiders;
 	static Condition adultsWaitingOahu;
 	static Condition adultsWaitingMolokai;
 	static Condition childrenWaitingOahu;
@@ -52,6 +53,7 @@ public class Boat
 		childrenAtMolokai = 0;
 		totalAdults = adults;
 		totalChildren = children;
+		boatRiders = 0;
 
 		adultsWaitingOahu = new Condition(boatLock);
 		adultsWaitingMolokai = new Condition(boatLock);
@@ -112,29 +114,35 @@ public class Boat
 
 		//While no children have been sent adults wait
 		while(childrenAtOahu == totalChildren) {
-			KThread.yield();
+			adultsWaitingMolokai.sleep();
+			adultsWaitingOahu.sleep();
 		}
 		while(adultsAtOahu + childrenAtOahu > 0) {
 			if(boatLocation == 0) { //Oahu
 				//send 2 children. Don't send any adults.
 				if(childrenAtOahu == totalChildren || childrenAtMolokai <= 0) {// If it's the first time or there are no children at Molokai to bring boat back
-					childrenWaitingOahu.wakeAll();
-
+					//Edit: Ended up doing this in ChildItinerary() Instead
+					//childrenWaitingOahu.wakeAll();
+					adultsWaitingOahu.sleep();
 				}
 				// We can send adult as long as there is a child at molokai
-				else { // if(childrenAtMolokai > 0) { // Is there any other check that needs to be done?
-					boatLock.acquire();
-					bg.AdultRowToMolokai;
-					boatLock.release();
-				}
-			}
-			else { // Molokai
-				if(childrenAtMolokai > 0) { //If there is a child have a child row back
-					childrenWaitingMolokai.wake();
-				}
-				else {
+				boatLock.acquire();
+				boatRiders +=2;
+				--adultsAtOahu;
+				bg.AdultRowToMolokai;
+				boatRiders -= 2;
+				++adultsAtMolokai;
+				boatLocation = 1;
+				adultsAtMolokai.sleep();
 
-				}
+				//Edit: Not sure if needed or covered in Child() already
+				//Wake up single child at Molokai so we can send the boat back
+				childrenWaitingMolokai.wake();
+				
+				boatLock.release();
+			}
+			else {	// Molokai
+				//Adults should never leave Molokai so nothing happens here.
 				adultsWaitingMolokai.sleep();
 			}
 		}
@@ -145,19 +153,35 @@ public class Boat
     {
 		while(adultsAtOahu + childrenAtOahu > 0) {
 			if(boatLocation == 0) { //Oahu
+
+				//Sleep if there is only one child or if boat is full
+				while((childrenAtOahu == 1 && adultsAtOahu > 0) || boatRiders >= 2) {
+					childrenAtOahu.sleep();
+				}
+				childrenAtOahu.wakeAll();
+
 				boatLock.acquire(); // Acquire lock at start
-				if(childrenAtOahu == totalChildren) { //If it's first time
+
+				//If it's first time we send two children
+				if(childrenAtOahu == totalChildren) {
 					//Send 2 children
+					boatRiders += 2;
 					bg.ChildRowToMolokai();
 					bg.ChildRideToMolokai();
 					childrenAtMolokai += 2;
 					childrenAtOahu -= 2;
 					boatLocation = 1;
+					boatRiders -= 2;
+					childrenAtMolokai.sleep();
+					adultsAtMolokai.sleep(); //Not sure if this one is needed
+
 					//Send one back
+					boatRiders = 1;
 					bg.ChildRowToOahu();
 					++childrenAtOahu;
 					--childrenAtMolokai;
 					boatLocation = 0;
+					
 
 				}
 				//If there is only one more child on Oahu we send and are finished
@@ -171,12 +195,14 @@ public class Boat
 				//Otherwise loop through and send all children to molokai
 				else {
 					while(childrenAtOahu > 1) {
+						boatRiders += 2;
 						bg.ChildRowToMolokai();
 						bg.ChildRideToMolokai();
 						childrenAtMolokai += 2;
 						childrenAtOahu -= 2;
 						boatLocation = 1;
 						//Send a kid back and repeat
+						boatRiders = 1;
 						bg.ChildRowToOahu();
 						--childrenAtMolokai;
 						++childrenAtOahu;
